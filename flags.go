@@ -80,22 +80,25 @@ func (p *Flags) More(args []string, flags ...interface{}) []string {
 
 // Parse predefined flags from command arguments.
 func (p *Flags) Parse(args []string) []string {
-	for i := 0; i < len(args); {
-		if k, found := p.aliases[args[i]]; found {
+	a := make([]string, len(args))
+	copy(a, args)
+
+	for i := 0; i < len(a); {
+		if k, found := p.aliases[a[i]]; found {
 			p.ByName[k] = true
-			if i < len(args)-1 {
-				copy(args[i:], args[i+1:])
+			if i < len(a)-1 {
+				copy(a[i:], a[i+1:])
 			}
-			args = args[:len(args)-1]
-		} else if _, found := p.ByName[args[i]]; found {
-			p.ByName[args[i]] = true
-			if i < len(args)-1 {
-				copy(args[i:], args[i+1:])
+			a = a[:len(a)-1]
+		} else if _, found := p.ByName[a[i]]; found {
+			p.ByName[a[i]] = true
+			if i < len(a)-1 {
+				copy(a[i:], a[i+1:])
 			}
-			args = args[:len(args)-1]
-		} else if len(args[i]) > 0 && args[i][0] == '-' {
+			a = a[:len(a)-1]
+		} else if len(a[i]) > 0 && a[i][0] == '-' {
 			var set []string
-			for _, c := range args[i][1:] {
+			for _, c := range a[i][1:] {
 				s := string([]rune{'-', c})
 				if _, found := p.ByName[s]; found {
 					set = append(set, s)
@@ -108,10 +111,10 @@ func (p *Flags) Parse(args []string) []string {
 				for _, s := range set {
 					p.ByName[s] = true
 				}
-				if i < len(args)-1 {
-					copy(args[i:], args[i+1:])
+				if i < len(a)-1 {
+					copy(a[i:], a[i+1:])
 				}
-				args = args[:len(args)-1]
+				a = a[:len(a)-1]
 			} else {
 				i++
 			}
@@ -119,7 +122,7 @@ func (p *Flags) Parse(args []string) []string {
 			i++
 		}
 	}
-	return args
+	return a
 }
 
 // Reset all flags.
